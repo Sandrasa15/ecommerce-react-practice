@@ -1,16 +1,12 @@
-import { useState, useContext, createContext } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { AuthContext as AuthContextValue } from "../contex/AuthContext.jsx";
-import{ useNavigate } from "react-router-dom";
-
-
-const FallbackAuthContext = createContext(null);
+import { useAuth } from "../contex/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
-   const authContext = AuthContextValue || FallbackAuthContext;
-   const { signUp, login } = useContext(authContext) || {};
+   const { signUp, login } = useAuth() || {};
    const navigate = useNavigate();
-   const [mode, setMode] = useState("Signup");
+   const [mode, setMode] = useState("signup");
    const [error, setError] = useState(null);
    const {
       register,
@@ -20,19 +16,15 @@ export default function Auth() {
 
    function onSubmit(data) {
       setError(null);
-      let result;
-      if (mode === "Signup") {
-         result = signUp(data.email, data.password);
-      } else {
-         result = login(data.email, data.password);
-      }
 
-      if (result ) 
-      {
+      const result = mode === "signup"
+         ? signUp(data.email, data.password)
+         : login(data.email, data.password);
+
+      if (result?.success) {
          navigate("/");
-      }
-      else{
-         setError(result.error);
+      } else {
+         setError(result?.error || "Something went wrong");
       }
    }
 
@@ -40,7 +32,7 @@ export default function Auth() {
       <div className="page">
          <div className="container">
             <div className="auth-container">
-               <h1 className="page-title">{mode === "Signup" ? "Sign Up" : "Log In"}</h1>
+               <h1 className="page-title">{mode === "signup" ? "Sign Up" : "Log In"}</h1>
                {error && <div className="error-message">{error}</div>}
                <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
                   <div className="form-group">
@@ -71,19 +63,19 @@ export default function Auth() {
                   </div>
 
                   <button type="submit" className="btn btn-primary btn-large">
-                     {mode === "Signup" ? "Sign Up" : "Log In"}
+                     {mode === "signup" ? "Sign Up" : "Log In"}
                   </button>
                </form>
 
                <div className="auth-switch">
-                  {mode === "Signup" ? (
+                  {mode === "signup" ? (
                      <p>
                         Already have an account?
                         <span
                            className="auth-link"
                            onClick={() => {
                               setError(null);
-                              setMode("Login");
+                              setMode("login");
                            }}
                         >
                            Login
@@ -96,7 +88,7 @@ export default function Auth() {
                            className="auth-link"
                            onClick={() => {
                               setError(null);
-                              setMode("Signup");
+                              setMode("signup");
                            }}
                         >
                            Sign Up
